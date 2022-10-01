@@ -1,8 +1,8 @@
 rm(list=ls())
 
 names <- c("horario", "temp", "vento", "umid", "sensa")
-path <- '/Users/u20124/Downloads/cepagri.csv'
-cepagri <- read.csv(path, F, ";", col.names = names)
+con <- url("http://ic.unicamp.br/~zanoni/cepagri/cepagri.csv")
+cepagri <- read.csv(con, F, ";", col.names = names)
 
 summary(cepagri)
 
@@ -12,7 +12,6 @@ tabelaSemNa <- na.omit(cepagri)
 
 # Código para pegar os valores sem NA e sem 0 na parte da umidade(não existe umidade 0)
 # tabelaDia <- formatarVetorPorDia(tabelaSemNa[tabelaSemNa[,4]!=0,])
-
 
 # Código para função formataPorDia que pega os valores médios da medida escolhida
 formataPorDia <- function(tabela, qualMedida)
@@ -40,17 +39,6 @@ formataPorDia <- function(tabela, qualMedida)
   vetorMedias <- append(vetorMedias, mediaAtual)
   return(vetorMedias)
 }
-
-
-
-
-
-
-
-
-
-
-
 
 # Código para pegar o primeiro valor de cada dia para deixar a quantidade de dados no vetor igual para o código acima. Função formatarVetorPorDia
 formatarVetorPorDia <- function(tabela){
@@ -82,12 +70,7 @@ formatarVetorPorDia <- function(tabela){
   }
   
   return(tabela[vetor,])
-  
 }
-
-
-
-
 
 # Código para função formataPorMes que pega os valores médios da medida escolhida
 formataPorMes <- function(tabela, qualMedida)
@@ -144,9 +127,7 @@ formatarVetorPorMes <- function(tabela){
     }
     
   }
-  
   return(tabela[vetor,])
-  
 }
 
 # Código para função formataPorAno que pega os valores médios da medida escolhida
@@ -176,7 +157,6 @@ formataPorAno <- function(tabela, qualMedida)
   return(vetorMedias)
 }
 
-
 # Código para pegar o primeiro valor de cada mês para deixar a quantidade de dados no vetor igual para o código acima. Função formatarVetorPorAno
 formatarVetorPorAno <- function(tabela){
   
@@ -205,9 +185,7 @@ formatarVetorPorAno <- function(tabela){
     }
     
   }
-  
   return(tabela[vetor,])
-  
 }
 
 # Código para pegar os valores sem NA e sem 0 na parte da umidade(não existe umidade 0). Basicamente um código para conseguir relacionar o tamanho da tabela por ano com a quantidade de médias. Ex: para relacionar duas tabelas, as duas precisam ter a mesma quantidade de valores -> tabelaDia tem 2913 linhas e valoresPorDia tem 2913 valores, logo conseguem se relacionar. Para mudar se vai ser por dia/mês/ano, basta trocar o “Dia” por “Mes” ou “Ano”
@@ -237,74 +215,36 @@ sensaçãoPorMes <- formataPorMes(tabelaSemNa[tabelaSemNa[,4]!=0,], 5)
 sensaçãoPorAno <- formataPorAno(tabelaSemNa[tabelaSemNa[,4]!=0,], 5)
 
 # Código para a criação dos gráficos pela média do dia/mês/ano (depende de qual função for chamada:
-                                                                # Para dia: tabelaDia — valoresPorDia
-                                                                # Para mes: tabelaMes — valoresPorMes
-                                                                # Para ano: tabelaAno — valoresPorAno
-                                                                
-                                                                # No formatarVetorPorDia, pega a tabelaSemNa e sua primeira coluna(a data). O formataPorDia pega a tabelaSemNa, tira a média da medida colocada(3 = ventos) e armazena em um vetor próprio.
-                
+# Para dia: tabelaDia — valoresPorDia
+# Para mes: tabelaMes — valoresPorMes
+# Para ano: tabelaAno — valoresPorAno
 
-ny <- airquality; ny$Month <- factor(month.abb[ny$Month], levels = month.abb, ordered = TRUE)
-ggplot(ny,aes(x=month.abb,y=Temp,group=Month,fill=Month))+geom_boxplot()+scale_fill_brewer(palette="Pastel1")
-
-ggplot(tabelaMes, aes(x=month.abb, y=temperaturasPorMes)) + geom_boxplot() + scale_fill_brewer(palette="Pastel1")
-
-ggplot(tabelaMes,aes(x=month.abb, y=umidadePorMes, group=month.abb,fill=month.abb)) + geom_boxplot() + scale_fill_brewer(palette="Pastel1")
-
-ggplot(data=tabelaAno, aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M"),
-   y = temperaturasPorAno, group=1)) + geom_line(linetype = "dashed") + geom_point() + labs(x = "Ano", y = "Temperatura")
-
-ggplot(data=tabelaAno, aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M"),
-   y = temperaturasPorAno/umidadePorAno, group=1)) + geom_line(linetype = "dashed") + geom_point() + labs(x = "Ano", y = "Razão entre temperatura e umidade")
-
-ggplot(data=tabelaDia, aes(x = as.Date(tabelaDia[,1], "%d/%m/%Y-%H:%M"),
-   y = valoresPorDia, group=1)) + geom_line(linetype = "dashed") + geom_point() + labs(x = "Data", y = "Temperatura")
+# No formatarVetorPorDia, pega a tabelaSemNa e sua primeira coluna(a data). O formataPorDia pega a tabelaSemNa, tira a média da medida colocada(3 = ventos) e armazena em um vetor próprio.
 
 
 ggplot(data=tabelaAno, aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M"),
- y = temperaturasPorAno, group=1)) + geom_line(linetype = "dashed") + geom_point() + labs(x = "Data", y = "Temperatura") + geom_line(aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M"), y = umidadePorAno))
+  y = temperaturasPorAno/umidadePorAno, group=1)) + geom_line(linetype = "dashed") + geom_point() + labs(x = "Ano", y = "Razão entre temperatura e umidade")
+# razão temperatura e umidade
+
+
+ggplot(data=tabelaMes, aes(x = as.Date(tabelaMes[,1], "%d/%m/%Y-%H:%M"),
+  y = temperaturasPorMes, group=1)) + geom_line(linetype = "dashed") + geom_point() + labs(x = "Data", y = "Temperatura")
+# temperaturas por mês
+
+
+ggplot(tabelaAno, aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M"),
+  y = temperaturasPorAno)) + geom_line(linetype = "dashed") + geom_point() + labs(x = "Data", y = "Temperatura e umidade") + geom_line(aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M"), y = umidadePorAno))
+# uma linha de temperatura e outra de umidade
 
 
 ggplot(data=tabelaAno, aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M"),
- y = temperaturasPorAno, group=1)) + geom_line(linetype = "dashed", colour="red") + geom_point() + labs(x = "Data", y = "Temperatura e umidade ") + geom_line(aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M"), y = sensaçãoPorAno))
+  y = temperaturasPorAno, group=1)) + geom_line(linetype = "dashed", colour="red") + geom_point() + labs(x = "Data", y = "Temperatura e sensação térmica ") + geom_line(aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M"), y = sensaçãoPorAno))
+# temperatura e sensação térmica
 
 
 ggplot(tabelaDia, aes(x = temperaturasPorDia , y = ventoPorDia)) + geom_point() + labs(x="Temperatura", y="Vento")
-
-tabelaSemNa[tabelaSemNa$]
-
-ggplot(tabelaAno, aes(x = temperaturasPorAno)) + geom_histogram(color = "White", bins=20)
+# temperatura e vento
 
 
-
-ggplot(tabelaDia, aes(x = temperaturasPorDia, y = umidadePorDia)) + geom_line(linetype = "solid") + geom_point() + labs(x = "Temperatura", y = "Umidade")
-
-ggplot(tabelaAno, aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M"), y = valoresPorAno)) + geom_density()
-
-ggplot(tabelaAno, aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M") , y = valoresPorAno)) + geom_smooth() + labs(x = "Data", y = "Temperatura")
-
-ggplot(tabelaAno, aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M") , y = umidadePorAno)) + geom_boxplot()
-
-ggplot(tabelaMes, aes(x = as.Date(tabelaMes[,1], "%d/%m/%Y-%H:%M"), y = umidadePorMes)) + geom_boxplot()
-
-
-ggplot(tabelaMes, aes(x=temperaturasPorMes, y=sensaçãoPorMes)) + geom_line() + labs(x='Temperatura', y='Sensação');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-temps <- ggplot(tabelaAno, aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M"), y = temperaturasPorAno)) + geom_point() + geom_line(colour="red") + geom_point() + labs(x = "Ano", y = "Temperatura") 
-temps + geom_line(tabelaAno, aes(x = as.Date(tabelaAno[,1], "%d/%m/%Y-%H:%M"), y = mean(temperaturasPorAno)), colour="blue") 
+ggplot(tabelaDia, aes(x = temperaturasPorDia, y = umidadePorDia)) + geom_line(linetype = "dotted") + geom_point() + labs(x = "Temperatura", y = "Umidade")
+# faixas com maior umidade de acordo com a temperatura
